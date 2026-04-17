@@ -1,0 +1,22 @@
+[package]
+name = "wsman-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+tokio = { workspace = true }
+reqwest = { workspace = true }
+quick-xml = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+url = { workspace = true }
+bytes = { workspace = true }
+digest_auth = { workspace = true }
+
+[dev-dependencies]
+wiremock = { workspace = true }
+pretty_assertions = { workspace = true }
+tokio-test = { workspace = true }
