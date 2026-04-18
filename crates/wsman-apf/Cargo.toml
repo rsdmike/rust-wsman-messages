@@ -8,6 +8,7 @@ repository.workspace = true
 
 [dependencies]
 thiserror.workspace = true
+wsman-core = { path = "../wsman-core" }
 
 [dev-dependencies]
 pretty_assertions.workspace = true

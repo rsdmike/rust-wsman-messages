@@ -49,6 +49,13 @@ impl<T: HeciTransport, H: HeciHooks> ApfSession<T, H> {
         self.port_forward_ok = true;
     }
 
+    #[doc(hidden)]
+    pub fn force_channel_state(&mut self, recipient: u32, window: u32) {
+        self.recipient_channel = recipient;
+        self.tx_window = window;
+        self.channel_active = true;
+    }
+
     /// APF init: send protocol version, consume incoming messages until
     /// the ME has forwarded port 16992 (or we time out).
     pub fn handshake(&mut self) -> Result<(), ApfError> {
