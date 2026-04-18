@@ -305,6 +305,29 @@ impl<T: HeciTransport, H: HeciHooks> ApfSession<T, H> {
         }
         Ok(mt)
     }
+
+    /// Reopen a channel after the previous one was closed.
+    ///
+    /// If `channel_open` returns a Heci or Aborted error (some ME firmware
+    /// sends HBM_CLIENT_DISCONNECT_REQ instead of CONFIRMATION on a reopen),
+    /// invoke `HeciHooks::reconnect_heci` and retry exactly once.
+    pub fn reopen_channel(&mut self) -> Result<(), ApfError> {
+        match self.channel_open() {
+            Ok(()) => Ok(()),
+            Err(ApfError::Heci(_)) | Err(ApfError::Aborted) => {
+                self.channel_active = false;
+                self.recipient_channel = 0;
+                self.tx_window = 0;
+                self.port_forward_ok = false;
+                self.hooks
+                    .reconnect_heci(&mut self.heci)
+                    .map_err(ApfError::from)?;
+                self.force_port_forward_ok();
+                self.channel_open()
+            }
+            Err(e) => Err(e),
+        }
+    }
 }
 
 fn data_first_byte(data: &[u8]) -> Result<u8, ApfError> {
