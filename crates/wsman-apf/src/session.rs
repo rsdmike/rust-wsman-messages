@@ -171,6 +171,88 @@ impl<T: HeciTransport, H: HeciHooks> ApfSession<T, H> {
         self.heci.close();
     }
 
+    pub fn send_bytes(&mut self, data: &[u8]) -> Result<(), ApfError> {
+        if !self.channel_active {
+            return Err(ApfError::ChannelClosed);
+        }
+        let mut frame = [0u8; 2048];
+        if 9 + data.len() > frame.len() {
+            return Err(ApfError::BufferTooSmall);
+        }
+        let n = encode_channel_data(&mut frame, self.recipient_channel, data)?;
+        self.raw_send(&frame[..n])
+    }
+
+    /// Read one or more CHANNEL_DATA frames into `out`. Returns the number
+    /// of bytes copied. Stops on CHANNEL_CLOSE if any data has been
+    /// received; returns `Err(Aborted)` if closed before any data arrives.
+    pub fn recv_bytes(&mut self, out: &mut [u8]) -> Result<usize, ApfError> {
+        self.rx_len = 0;
+        for _ in 0..100 {
+            let mut buf = [0u8; 2048];
+            let (len, me, host) = match self.heci.recv(&mut buf) {
+                Ok(v) => v,
+                Err(_) if self.rx_len > 0 => break,
+                Err(e) => return Err(ApfError::from(e)),
+            };
+            if me != self.me_addr || host != self.host_addr {
+                continue;
+            }
+            let Some(mt) = buf.first().copied() else { continue };
+            match mt {
+                APF_CHANNEL_DATA => {
+                    if len < 9 {
+                        return Err(ApfError::Protocol("CHANNEL_DATA too short"));
+                    }
+                    let data_len = read_be32(&buf[5..9]) as usize;
+                    if len < 9 + data_len {
+                        return Err(ApfError::Protocol("CHANNEL_DATA truncated"));
+                    }
+                    if self.rx_len + data_len > self.rx_buf.len() {
+                        return Err(ApfError::BufferTooSmall);
+                    }
+                    self.rx_buf[self.rx_len..self.rx_len + data_len]
+                        .copy_from_slice(&buf[9..9 + data_len]);
+                    self.rx_len += data_len;
+
+                    let mut wa = [0u8; 9];
+                    encode_window_adjust(&mut wa, self.recipient_channel, data_len as u32)?;
+                    self.raw_send(&wa)?;
+                }
+                APF_CHANNEL_WINDOW_ADJUST => {
+                    if len >= 9 {
+                        self.tx_window = self.tx_window.saturating_add(read_be32(&buf[5..9]));
+                    }
+                }
+                APF_CHANNEL_CLOSE => {
+                    if self.channel_active {
+                        let mut close = [0u8; 5];
+                        encode_channel_close(&mut close, self.recipient_channel)?;
+                        let _ = self.raw_send(&close);
+                        self.channel_active = false;
+                    }
+                    break;
+                }
+                APF_KEEPALIVE_REQUEST => {
+                    if len >= 5 {
+                        let cookie = read_be32(&buf[1..5]);
+                        let mut reply = [0u8; 5];
+                        encode_keepalive_reply(&mut reply, cookie)?;
+                        self.raw_send(&reply)?;
+                    }
+                }
+                _ => { /* ignore */ }
+            }
+        }
+
+        if self.rx_len == 0 {
+            return Err(ApfError::Aborted);
+        }
+        let copy = self.rx_len.min(out.len());
+        out[..copy].copy_from_slice(&self.rx_buf[..copy]);
+        Ok(copy)
+    }
+
     pub(crate) fn process_apf(&mut self, data: &[u8]) -> Result<u8, ApfError> {
         if data.is_empty() {
             return Err(ApfError::Protocol("empty APF message"));
