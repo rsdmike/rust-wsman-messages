@@ -9,5 +9,6 @@ pub mod error;
 pub mod parse;
 pub mod schema;
 pub mod selector;
+pub mod transport;
 
 pub use error::WsmanError;
