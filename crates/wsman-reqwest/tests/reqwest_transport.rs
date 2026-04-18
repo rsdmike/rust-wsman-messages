@@ -8,7 +8,10 @@ async fn transport_posts_and_reads_body() {
     let server = MockServer::start().await;
     Mock::given(method("POST"))
         .and(path("/wsman"))
-        .and(header("Content-Type", "application/soap+xml; charset=utf-8"))
+        .and(header(
+            "Content-Type",
+            "application/soap+xml; charset=utf-8",
+        ))
         .respond_with(
             ResponseTemplate::new(200).set_body_raw(b"<ok/>".to_vec(), "application/soap+xml"),
         )
@@ -55,11 +58,18 @@ async fn transport_extracts_www_authenticate_on_401() {
         let mut auth = [0u8; 256];
         let mut rb = ResponseBuf::new(&mut body, &mut auth);
         let meta = t.post(&[], b"<req/>", &mut rb).unwrap();
-        (meta.status, rb.www_authenticate[..rb.www_authenticate_len].to_vec())
+        (
+            meta.status,
+            rb.www_authenticate[..rb.www_authenticate_len].to_vec(),
+        )
     })
     .await
     .unwrap();
 
     assert_eq!(result.0, 401);
-    assert!(std::str::from_utf8(&result.1).unwrap().contains(r#"realm="R""#));
+    assert!(
+        std::str::from_utf8(&result.1)
+            .unwrap()
+            .contains(r#"realm="R""#)
+    );
 }

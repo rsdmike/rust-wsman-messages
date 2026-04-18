@@ -2,8 +2,8 @@ mod common;
 
 use common::{Event, FakeHeci};
 use wsman_apf::message::{
-    APF_AMT_HTTP_PORT, APF_CHANNEL_OPEN, APF_CHANNEL_OPEN_CONFIRMATION,
-    APF_CHANNEL_OPEN_FAILURE, LME_RX_WINDOW_SIZE, read_be32, write_be32,
+    APF_AMT_HTTP_PORT, APF_CHANNEL_OPEN, APF_CHANNEL_OPEN_CONFIRMATION, APF_CHANNEL_OPEN_FAILURE,
+    LME_RX_WINDOW_SIZE, write_be32,
 };
 use wsman_apf::session::ApfSession;
 use wsman_apf::transport::{HeciHooks, NoHooks};
@@ -14,17 +14,28 @@ const ME: u8 = 0x11;
 fn bytes_channel_open_exp() -> Vec<u8> {
     let mut v = vec![0u8; 66];
     let mut i = 0;
-    v[i] = APF_CHANNEL_OPEN; i += 1;
-    write_be32(&mut v[i..i + 4], b"forwarded-tcpip".len() as u32); i += 4;
-    v[i..i + 15].copy_from_slice(b"forwarded-tcpip"); i += 15;
-    write_be32(&mut v[i..i + 4], 1); i += 4;
-    write_be32(&mut v[i..i + 4], LME_RX_WINDOW_SIZE); i += 4;
-    write_be32(&mut v[i..i + 4], 0xFFFF_FFFF); i += 4;
-    write_be32(&mut v[i..i + 4], 9); i += 4;
-    v[i..i + 9].copy_from_slice(b"127.0.0.1"); i += 9;
-    write_be32(&mut v[i..i + 4], APF_AMT_HTTP_PORT); i += 4;
-    write_be32(&mut v[i..i + 4], 9); i += 4;
-    v[i..i + 9].copy_from_slice(b"127.0.0.1"); i += 9;
+    v[i] = APF_CHANNEL_OPEN;
+    i += 1;
+    write_be32(&mut v[i..i + 4], b"forwarded-tcpip".len() as u32);
+    i += 4;
+    v[i..i + 15].copy_from_slice(b"forwarded-tcpip");
+    i += 15;
+    write_be32(&mut v[i..i + 4], 1);
+    i += 4;
+    write_be32(&mut v[i..i + 4], LME_RX_WINDOW_SIZE);
+    i += 4;
+    write_be32(&mut v[i..i + 4], 0xFFFF_FFFF);
+    i += 4;
+    write_be32(&mut v[i..i + 4], 9);
+    i += 4;
+    v[i..i + 9].copy_from_slice(b"127.0.0.1");
+    i += 9;
+    write_be32(&mut v[i..i + 4], APF_AMT_HTTP_PORT);
+    i += 4;
+    write_be32(&mut v[i..i + 4], 9);
+    i += 4;
+    v[i..i + 9].copy_from_slice(b"127.0.0.1");
+    i += 9;
     write_be32(&mut v[i..i + 4], APF_AMT_HTTP_PORT);
     v
 }
@@ -49,9 +60,14 @@ fn bytes_channel_open_failure(recip: u32, reason: u32) -> Vec<u8> {
 #[test]
 fn channel_open_happy_path_records_state() {
     let script = vec![
-        Event::ExpectSend { me: ME, host: HOST, data: bytes_channel_open_exp() },
+        Event::ExpectSend {
+            me: ME,
+            host: HOST,
+            data: bytes_channel_open_exp(),
+        },
         Event::ReturnRecv {
-            me: ME, host: HOST,
+            me: ME,
+            host: HOST,
             data: bytes_channel_open_confirmation(1, 99, 8192),
         },
     ];
@@ -68,9 +84,14 @@ fn channel_open_happy_path_records_state() {
 #[test]
 fn channel_open_failure_returns_error() {
     let script = vec![
-        Event::ExpectSend { me: ME, host: HOST, data: bytes_channel_open_exp() },
+        Event::ExpectSend {
+            me: ME,
+            host: HOST,
+            data: bytes_channel_open_exp(),
+        },
         Event::ReturnRecv {
-            me: ME, host: HOST,
+            me: ME,
+            host: HOST,
             data: bytes_channel_open_failure(1, 4),
         },
     ];
@@ -90,9 +111,14 @@ fn post_channel_open_send_hook_fires() {
         }
     }
     let script = vec![
-        Event::ExpectSend { me: ME, host: HOST, data: bytes_channel_open_exp() },
+        Event::ExpectSend {
+            me: ME,
+            host: HOST,
+            data: bytes_channel_open_exp(),
+        },
         Event::ReturnRecv {
-            me: ME, host: HOST,
+            me: ME,
+            host: HOST,
             data: bytes_channel_open_confirmation(1, 99, 8192),
         },
     ];

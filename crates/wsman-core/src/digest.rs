@@ -12,10 +12,18 @@ pub struct Challenge {
 }
 
 impl Challenge {
-    pub fn realm(&self) -> &str { &self.realm }
-    pub fn nonce(&self) -> &str { &self.nonce }
-    pub fn qop(&self) -> &str { &self.qop }
-    pub fn opaque(&self) -> &str { &self.opaque }
+    pub fn realm(&self) -> &str {
+        &self.realm
+    }
+    pub fn nonce(&self) -> &str {
+        &self.nonce
+    }
+    pub fn qop(&self) -> &str {
+        &self.qop
+    }
+    pub fn opaque(&self) -> &str {
+        &self.opaque
+    }
 
     pub fn parse(header_value: &[u8]) -> Result<Self, WsmanError> {
         let s = core::str::from_utf8(header_value)
@@ -55,7 +63,7 @@ fn extract_field(s: &str, name: &str) -> Option<String> {
     let begin = start + needle.len();
     let tail = &s[begin..];
     let end = tail
-        .find(|c: char| c == ',' || c == ' ' || c == '\r' || c == '\n')
+        .find([',', ' ', '\r', '\n'])
         .unwrap_or(tail.len());
     Some(tail[..end].to_string())
 }
@@ -63,6 +71,7 @@ fn extract_field(s: &str, name: &str) -> Option<String> {
 /// Computes the `Authorization: Digest ...` header value (without the
 /// leading `Authorization: `) and writes it into `out`. Returns the
 /// number of bytes written.
+#[allow(clippy::too_many_arguments)]
 pub fn build_authorization_header(
     challenge: &Challenge,
     username: &str,
@@ -73,12 +82,24 @@ pub fn build_authorization_header(
     cnonce: &str,
     out: &mut [u8],
 ) -> Result<usize, WsmanError> {
-    let ha1 = md5_hex(&[username.as_bytes(), b":", challenge.realm.as_bytes(), b":", password.as_bytes()]);
+    let ha1 = md5_hex(&[
+        username.as_bytes(),
+        b":",
+        challenge.realm.as_bytes(),
+        b":",
+        password.as_bytes(),
+    ]);
     let ha2 = md5_hex(&[method.as_bytes(), b":", uri.as_bytes()]);
     let nc_str = format_nc(nc);
 
     let response = if challenge.qop.is_empty() {
-        md5_hex(&[ha1.as_bytes(), b":", challenge.nonce.as_bytes(), b":", ha2.as_bytes()])
+        md5_hex(&[
+            ha1.as_bytes(),
+            b":",
+            challenge.nonce.as_bytes(),
+            b":",
+            ha2.as_bytes(),
+        ])
     } else {
         md5_hex(&[
             ha1.as_bytes(),
@@ -125,7 +146,10 @@ pub fn build_authorization_header(
 
     let bytes = rendered.as_bytes();
     if bytes.len() > out.len() {
-        return Err(WsmanError::BufferTooSmall { need: bytes.len(), have: out.len() });
+        return Err(WsmanError::BufferTooSmall {
+            need: bytes.len(),
+            have: out.len(),
+        });
     }
     out[..bytes.len()].copy_from_slice(bytes);
     Ok(bytes.len())

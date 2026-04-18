@@ -86,7 +86,10 @@ pub fn encode_channel_open(
     let mut p = 0;
     buf[p] = APF_CHANNEL_OPEN;
     p += 1;
-    write_be32(&mut buf[p..p + 4], APF_OPEN_CHANNEL_REQUEST_FORWARDED.len() as u32);
+    write_be32(
+        &mut buf[p..p + 4],
+        APF_OPEN_CHANNEL_REQUEST_FORWARDED.len() as u32,
+    );
     p += 4;
     buf[p..p + 15].copy_from_slice(APF_OPEN_CHANNEL_REQUEST_FORWARDED);
     p += 15;
@@ -111,11 +114,7 @@ pub fn encode_channel_open(
     Ok(p)
 }
 
-pub fn encode_channel_data(
-    buf: &mut [u8],
-    recipient: u32,
-    data: &[u8],
-) -> Result<usize, ApfError> {
+pub fn encode_channel_data(buf: &mut [u8], recipient: u32, data: &[u8]) -> Result<usize, ApfError> {
     let total = 9 + data.len();
     require(buf, total)?;
     buf[0] = APF_CHANNEL_DATA;

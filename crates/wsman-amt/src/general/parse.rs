@@ -1,5 +1,5 @@
-use wsman_core::parse::extract_text;
 use wsman_core::WsmanError;
+use wsman_core::parse::extract_text;
 
 use super::types::GeneralSettings;
 

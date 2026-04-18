@@ -60,14 +60,28 @@ fn bytes_confirmation(recip: u32, sender: u32, window: u32) -> Vec<u8> {
 #[test]
 fn reopen_retries_after_aborted_open() {
     let script = vec![
-        Event::ExpectSend { me: ME, host: HOST, data: bytes_open(1) },
+        Event::ExpectSend {
+            me: ME,
+            host: HOST,
+            data: bytes_open(1),
+        },
         Event::ReturnRecvErr(HeciError::Io("HBM disconnect".into())),
-        Event::ExpectSend { me: ME, host: HOST, data: bytes_open(2) },
-        Event::ReturnRecv { me: ME, host: HOST, data: bytes_confirmation(2, 77, 4096) },
+        Event::ExpectSend {
+            me: ME,
+            host: HOST,
+            data: bytes_open(2),
+        },
+        Event::ReturnRecv {
+            me: ME,
+            host: HOST,
+            data: bytes_confirmation(2, 77, 4096),
+        },
     ];
 
     let fake = FakeHeci::new(script);
-    let hook = RecordingHook { calls: std::cell::Cell::new(0) };
+    let hook = RecordingHook {
+        calls: std::cell::Cell::new(0),
+    };
     let mut s = ApfSession::new(fake, hook, ME, HOST);
     s.force_port_forward_ok();
 

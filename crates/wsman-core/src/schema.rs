@@ -1,8 +1,7 @@
 use alloc::string::String;
 
 pub const DEFAULT_TIMEOUT: &str = "PT60S";
-pub const WSA_ANONYMOUS: &str =
-    "http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous";
+pub const WSA_ANONYMOUS: &str = "http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Namespace {
@@ -42,9 +41,7 @@ impl Action {
         match self {
             Action::Get => "http://schemas.xmlsoap.org/ws/2004/09/transfer/Get",
             Action::Put => "http://schemas.xmlsoap.org/ws/2004/09/transfer/Put",
-            Action::Enumerate => {
-                "http://schemas.xmlsoap.org/ws/2004/09/enumeration/Enumerate"
-            }
+            Action::Enumerate => "http://schemas.xmlsoap.org/ws/2004/09/enumeration/Enumerate",
             Action::Pull => "http://schemas.xmlsoap.org/ws/2004/09/enumeration/Pull",
             Action::Invoke(s) => s,
         }

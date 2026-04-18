@@ -37,11 +37,21 @@ impl<T: HeciTransport, H: HeciHooks> ApfSession<T, H> {
         }
     }
 
-    pub fn port_forwarding_established(&self) -> bool { self.port_forward_ok }
-    pub fn channel_active(&self) -> bool { self.channel_active }
-    pub fn recipient_channel(&self) -> u32 { self.recipient_channel }
-    pub fn tx_window(&self) -> u32 { self.tx_window }
-    pub fn hooks_ref(&self) -> &H { &self.hooks }
+    pub fn port_forwarding_established(&self) -> bool {
+        self.port_forward_ok
+    }
+    pub fn channel_active(&self) -> bool {
+        self.channel_active
+    }
+    pub fn recipient_channel(&self) -> u32 {
+        self.recipient_channel
+    }
+    pub fn tx_window(&self) -> u32 {
+        self.tx_window
+    }
+    pub fn hooks_ref(&self) -> &H {
+        &self.hooks
+    }
 
     /// Test-only: bypass the handshake when unit-testing downstream operations.
     #[doc(hidden)]
@@ -106,7 +116,9 @@ impl<T: HeciTransport, H: HeciHooks> ApfSession<T, H> {
     }
 
     pub(crate) fn raw_send(&mut self, data: &[u8]) -> Result<(), ApfError> {
-        self.heci.send(self.me_addr, self.host_addr, data).map_err(ApfError::from)
+        self.heci
+            .send(self.me_addr, self.host_addr, data)
+            .map_err(ApfError::from)
     }
 
     /// Open a `forwarded-tcpip` channel to AMT's HTTP port.
@@ -205,7 +217,9 @@ impl<T: HeciTransport, H: HeciHooks> ApfSession<T, H> {
             if me != self.me_addr || host != self.host_addr {
                 continue;
             }
-            let Some(mt) = buf.first().copied() else { continue };
+            let Some(mt) = buf.first().copied() else {
+                continue;
+            };
             match mt {
                 APF_CHANNEL_DATA => {
                     if len < 9 {
@@ -281,7 +295,9 @@ impl<T: HeciTransport, H: HeciHooks> ApfSession<T, H> {
                 self.raw_send(&out[..n])?;
             }
             APF_GLOBAL_REQUEST => {
-                if data.len() < 5 { return Err(ApfError::Protocol("GLOBAL_REQUEST short")); }
+                if data.len() < 5 {
+                    return Err(ApfError::Protocol("GLOBAL_REQUEST short"));
+                }
                 let name_len = read_be32(&data[1..5]) as usize;
                 if data.len() < 6 + name_len {
                     return Err(ApfError::Protocol("GLOBAL_REQUEST truncated"));
@@ -305,8 +321,11 @@ impl<T: HeciTransport, H: HeciHooks> ApfSession<T, H> {
                     self.port_forward_ok = true;
                 }
             }
-            APF_CHANNEL_OPEN_CONFIRMATION | APF_CHANNEL_OPEN_FAILURE
-            | APF_CHANNEL_WINDOW_ADJUST | APF_CHANNEL_DATA | APF_CHANNEL_CLOSE
+            APF_CHANNEL_OPEN_CONFIRMATION
+            | APF_CHANNEL_OPEN_FAILURE
+            | APF_CHANNEL_WINDOW_ADJUST
+            | APF_CHANNEL_DATA
+            | APF_CHANNEL_CLOSE
             | APF_KEEPALIVE_REQUEST => {}
             _ => {}
         }
@@ -338,5 +357,7 @@ impl<T: HeciTransport, H: HeciHooks> ApfSession<T, H> {
 }
 
 fn data_first_byte(data: &[u8]) -> Result<u8, ApfError> {
-    data.first().copied().ok_or(ApfError::Protocol("empty message"))
+    data.first()
+        .copied()
+        .ok_or(ApfError::Protocol("empty message"))
 }

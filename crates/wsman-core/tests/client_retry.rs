@@ -1,6 +1,6 @@
+use wsman_core::WsmanError;
 use wsman_core::client::{Client, Credentials};
 use wsman_core::transport::{ResponseBuf, ResponseMeta, Transport};
-use wsman_core::WsmanError;
 
 /// Scripted response. `status == 401` also sets `www_authenticate`.
 struct Scripted {
@@ -75,7 +75,11 @@ fn execute_retries_on_401_then_returns_body() {
 fn second_401_is_fatal() {
     let t = Scripted::new(vec![
         (401, b"", br#"Digest realm="R", nonce="N", qop="auth""#),
-        (401, b"still-no", br#"Digest realm="R", nonce="N2", qop="auth""#),
+        (
+            401,
+            b"still-no",
+            br#"Digest realm="R", nonce="N2", qop="auth""#,
+        ),
     ]);
     let mut c = Client::new(t, Credentials::digest("u", "p"));
     let mut body = [0u8; 256];

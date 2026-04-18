@@ -1,10 +1,10 @@
 use alloc::format;
 
+use wsman_core::WsmanError;
 use wsman_core::client::Client;
 use wsman_core::envelope::build_invoke;
 use wsman_core::schema::Namespace;
 use wsman_core::transport::{ResponseBuf, Transport};
-use wsman_core::WsmanError;
 
 use super::parse::parse_setup;
 use super::types::{SetupInput, SetupOutput};
@@ -14,8 +14,7 @@ const RESPONSE_BUF: usize = 4096;
 const AUTH_BUF: usize = 1024;
 
 const RESOURCE_CLASS: &str = "IPS_HostBasedSetupService";
-const NAMESPACE_URI: &str =
-    "http://intel.com/wbem/wscim/1/ips-schema/1/IPS_HostBasedSetupService";
+const NAMESPACE_URI: &str = "http://intel.com/wbem/wscim/1/ips-schema/1/IPS_HostBasedSetupService";
 const ACTION_SETUP: &str =
     "http://intel.com/wbem/wscim/1/ips-schema/1/IPS_HostBasedSetupService/Setup";
 

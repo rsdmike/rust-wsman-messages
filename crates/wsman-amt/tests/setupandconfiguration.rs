@@ -1,9 +1,9 @@
 use wsman_amt::setupandconfiguration::{
     ProvisioningMode, SetupAndConfigurationService, UnprovisionInput,
 };
+use wsman_core::WsmanError;
 use wsman_core::client::{Client, Credentials};
 use wsman_core::transport::{ResponseBuf, ResponseMeta, Transport};
-use wsman_core::WsmanError;
 
 const UNPROVISION_OK: &[u8] = br#"<?xml version="1.0"?>
 <a:Envelope xmlns:a="http://www.w3.org/2003/05/soap-envelope"
@@ -33,7 +33,10 @@ impl Transport for Spy {
 
 #[test]
 fn unprovision_sends_mode_and_parses_return_value() {
-    let spy = Spy { last_body: Default::default(), resp: UNPROVISION_OK };
+    let spy = Spy {
+        last_body: Default::default(),
+        resp: UNPROVISION_OK,
+    };
     let mut client = Client::new(spy, Credentials::digest("u", "p"));
     let out = SetupAndConfigurationService::new(&mut client)
         .unprovision(UnprovisionInput {

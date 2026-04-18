@@ -1,6 +1,7 @@
-use wsman_core::digest::{build_authorization_header, Challenge};
+use wsman_core::digest::{Challenge, build_authorization_header};
 
-const AMT_401_HEADER: &str = r#"Digest realm="Digest:AABBCCDD", nonce="1234567890abcdef", stale="false", qop="auth""#;
+const AMT_401_HEADER: &str =
+    r#"Digest realm="Digest:AABBCCDD", nonce="1234567890abcdef", stale="false", qop="auth""#;
 
 #[test]
 fn parse_challenge_fields() {
@@ -29,7 +30,14 @@ fn authorization_header_round_trip() {
     let c = Challenge::parse(hdr.as_bytes()).unwrap();
     let mut out = [0u8; 1024];
     let n = build_authorization_header(
-        &c, "user", "pass", "POST", "/wsman", 1, "cnonceval", &mut out,
+        &c,
+        "user",
+        "pass",
+        "POST",
+        "/wsman",
+        1,
+        "cnonceval",
+        &mut out,
     )
     .unwrap();
     let hdr = core::str::from_utf8(&out[..n]).unwrap();
@@ -53,10 +61,8 @@ fn authorization_header_without_qop_uses_legacy_form() {
     let hdr = r#"Digest realm="R", nonce="N""#;
     let c = Challenge::parse(hdr.as_bytes()).unwrap();
     let mut out = [0u8; 512];
-    let n = build_authorization_header(
-        &c, "u", "p", "POST", "/wsman", 1, "cnonceval", &mut out,
-    )
-    .unwrap();
+    let n = build_authorization_header(&c, "u", "p", "POST", "/wsman", 1, "cnonceval", &mut out)
+        .unwrap();
     let hdr = core::str::from_utf8(&out[..n]).unwrap();
     assert!(!hdr.contains("qop="));
     assert!(!hdr.contains("nc="));
@@ -67,10 +73,8 @@ fn opaque_included_when_present() {
     let hdr = r#"Digest realm="R", nonce="N", qop="auth", opaque="OP""#;
     let c = Challenge::parse(hdr.as_bytes()).unwrap();
     let mut out = [0u8; 512];
-    let n = build_authorization_header(
-        &c, "u", "p", "POST", "/wsman", 1, "cnonceval", &mut out,
-    )
-    .unwrap();
+    let n = build_authorization_header(&c, "u", "p", "POST", "/wsman", 1, "cnonceval", &mut out)
+        .unwrap();
     let hdr = core::str::from_utf8(&out[..n]).unwrap();
     assert!(hdr.contains(r#"opaque="OP""#));
 }

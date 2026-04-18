@@ -1,6 +1,6 @@
 use alloc::string::{String, ToString};
 
-use crate::digest::{build_authorization_header, Challenge};
+use crate::digest::{Challenge, build_authorization_header};
 use crate::error::WsmanError;
 use crate::transport::{ResponseBuf, Transport};
 
@@ -34,7 +34,12 @@ const REQUEST_URI: &str = "/wsman";
 
 impl<T: Transport> Client<T> {
     pub fn new(transport: T, credentials: Credentials) -> Self {
-        Self { transport, credentials, message_id: 0, nc: 0 }
+        Self {
+            transport,
+            credentials,
+            message_id: 0,
+            nc: 0,
+        }
     }
 
     /// Returns and increments the next message id.
@@ -51,11 +56,7 @@ impl<T: Transport> Client<T> {
     }
 
     /// Send `xml`, handle one 401→digest retry, return body length.
-    pub fn execute(
-        &mut self,
-        xml: &[u8],
-        resp: &mut ResponseBuf<'_>,
-    ) -> Result<usize, WsmanError> {
+    pub fn execute(&mut self, xml: &[u8], resp: &mut ResponseBuf<'_>) -> Result<usize, WsmanError> {
         let meta = self.transport.post(&BASE_HEADERS, xml, resp)?;
         match meta.status {
             200 => Ok(resp.body_len),
@@ -80,7 +81,14 @@ impl<T: Transport> Client<T> {
 
         let mut auth_buf = [0u8; 1024];
         let n = build_authorization_header(
-            &challenge, username, password, "POST", REQUEST_URI, self.nc, &cnonce, &mut auth_buf,
+            &challenge,
+            username,
+            password,
+            "POST",
+            REQUEST_URI,
+            self.nc,
+            &cnonce,
+            &mut auth_buf,
         )?;
         let auth_str = core::str::from_utf8(&auth_buf[..n])
             .map_err(|_| WsmanError::Auth("auth header not UTF-8"))?;

@@ -39,7 +39,9 @@ impl<T: HeciTransport, H: HeciHooks> Transport for ApfTransport<T, H> {
         if !self.session.channel_active() {
             self.session.reopen_channel().map_err(apf_to_wsman)?;
         }
-        self.session.send_bytes(&frame[..req_len]).map_err(apf_to_wsman)?;
+        self.session
+            .send_bytes(&frame[..req_len])
+            .map_err(apf_to_wsman)?;
 
         let mut stream = [0u8; STREAM_BUF_SIZE];
         let n = self.session.recv_bytes(&mut stream).map_err(apf_to_wsman)?;
@@ -79,30 +81,24 @@ fn build_http_request(
     Ok(total)
 }
 
-fn parse_http_response(
-    raw: &[u8],
-    out: &mut ResponseBuf<'_>,
-) -> Result<ResponseMeta, WsmanError> {
-    let prefix = if raw.starts_with(b"HTTP/1.1 ") {
-        Some(9)
-    } else if raw.starts_with(b"HTTP/1.0 ") {
-        Some(9)
+fn parse_http_response(raw: &[u8], out: &mut ResponseBuf<'_>) -> Result<ResponseMeta, WsmanError> {
+    let prefix = if raw.starts_with(b"HTTP/1.1 ") || raw.starts_with(b"HTTP/1.0 ") {
+        9
     } else {
-        None
-    }
-    .ok_or(WsmanError::Parse("no HTTP status line"))?;
+        return Err(WsmanError::Parse("no HTTP status line"));
+    };
 
     let mut status = 0u16;
     for i in 0..3 {
         let b = raw[prefix + i];
-        if !(b'0'..=b'9').contains(&b) {
+        if !b.is_ascii_digit() {
             return Err(WsmanError::Parse("bad status digits"));
         }
         status = status * 10 + (b - b'0') as u16;
     }
 
-    let header_end = find_subslice(raw, b"\r\n\r\n")
-        .ok_or(WsmanError::Parse("no header terminator"))?;
+    let header_end =
+        find_subslice(raw, b"\r\n\r\n").ok_or(WsmanError::Parse("no header terminator"))?;
     let headers = &raw[..header_end];
     let body_start = header_end + 4;
 
@@ -133,8 +129,11 @@ fn parse_http_response(
             .unwrap_or(headers.len());
         let value = trim(&headers[line_start..line_end]);
         let s = core::str::from_utf8(value).map_err(|_| WsmanError::Parse("bad content-length"))?;
-        content_length =
-            Some(s.trim().parse().map_err(|_| WsmanError::Parse("bad content-length"))?);
+        content_length = Some(
+            s.trim()
+                .parse()
+                .map_err(|_| WsmanError::Parse("bad content-length"))?,
+        );
     }
 
     let body_full = &raw[body_start..];
@@ -144,7 +143,10 @@ fn parse_http_response(
     };
 
     if body.len() > out.body.len() {
-        return Err(WsmanError::BufferTooSmall { need: body.len(), have: out.body.len() });
+        return Err(WsmanError::BufferTooSmall {
+            need: body.len(),
+            have: out.body.len(),
+        });
     }
     out.body[..body.len()].copy_from_slice(body);
     out.body_len = body.len();

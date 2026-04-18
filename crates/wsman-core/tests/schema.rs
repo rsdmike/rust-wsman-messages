@@ -1,4 +1,4 @@
-use wsman_core::schema::{Action, Namespace, DEFAULT_TIMEOUT, WSA_ANONYMOUS};
+use wsman_core::schema::{Action, DEFAULT_TIMEOUT, Namespace, WSA_ANONYMOUS};
 
 #[test]
 fn action_uris_are_stable() {

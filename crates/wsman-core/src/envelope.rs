@@ -43,10 +43,12 @@ fn render_header(
 }
 
 fn finish(header: &str, body: &str, out: &mut [u8]) -> Result<usize, WsmanError> {
-    let need =
-        XML_PROLOG_OPEN_ENVELOPE.len() + header.len() + body.len() + ENVELOPE_END.len();
+    let need = XML_PROLOG_OPEN_ENVELOPE.len() + header.len() + body.len() + ENVELOPE_END.len();
     if need > out.len() {
-        return Err(WsmanError::BufferTooSmall { need, have: out.len() });
+        return Err(WsmanError::BufferTooSmall {
+            need,
+            have: out.len(),
+        });
     }
     let mut p = 0;
     for chunk in [
@@ -81,8 +83,8 @@ pub fn build_put(
     out: &mut [u8],
 ) -> Result<usize, WsmanError> {
     let h = render_header(Action::Put, resource_uri, message_id, selectors, timeout);
-    let body_str = core::str::from_utf8(body_xml)
-        .map_err(|_| WsmanError::Builder("body_xml is not UTF-8"))?;
+    let body_str =
+        core::str::from_utf8(body_xml).map_err(|_| WsmanError::Builder("body_xml is not UTF-8"))?;
     let body = format!("<Body>{body_str}</Body>");
     finish(&h, &body, out)
 }

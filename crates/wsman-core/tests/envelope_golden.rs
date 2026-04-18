@@ -14,7 +14,9 @@ fn get_envelope_matches_expected() {
     let xml = render(|b| envelope::build_get(&uri, &[], 1, None, b));
 
     assert!(xml.starts_with("<?xml version=\"1.0\" encoding=\"utf-8\"?>"));
-    assert!(xml.contains("<a:Action>http://schemas.xmlsoap.org/ws/2004/09/transfer/Get</a:Action>"));
+    assert!(
+        xml.contains("<a:Action>http://schemas.xmlsoap.org/ws/2004/09/transfer/Get</a:Action>")
+    );
     assert!(xml.contains("<a:To>/wsman</a:To>"));
     assert!(xml.contains("<w:ResourceURI>http://intel.com/wbem/wscim/1/amt-schema/1/AMT_GeneralSettings</w:ResourceURI>"));
     assert!(xml.contains("<a:MessageID>1</a:MessageID>"));
@@ -27,7 +29,13 @@ fn get_envelope_matches_expected() {
 fn get_envelope_with_selector() {
     let uri = Namespace::Amt.resource_uri("AMT_GeneralSettings");
     let xml = render(|b| {
-        envelope::build_get(&uri, &[Selector::new("InstanceID", "Intel(r) AMT")], 7, None, b)
+        envelope::build_get(
+            &uri,
+            &[Selector::new("InstanceID", "Intel(r) AMT")],
+            7,
+            None,
+            b,
+        )
     });
 
     assert!(xml.contains("<w:SelectorSet>"));
@@ -39,13 +47,13 @@ fn get_envelope_with_selector() {
 fn invoke_envelope_splices_input_body() {
     let uri = Namespace::Ips.resource_uri("IPS_HostBasedSetupService");
     let action = "http://intel.com/wbem/wscim/1/ips-schema/1/IPS_HostBasedSetupService/Setup";
-    let input_xml =
-        "<h:Setup_INPUT xmlns:h=\"http://intel.com/wbem/wscim/1/ips-schema/1/IPS_HostBasedSetupService\">\
+    let input_xml = "<h:Setup_INPUT xmlns:h=\"http://intel.com/wbem/wscim/1/ips-schema/1/IPS_HostBasedSetupService\">\
 <h:NetAdminPassEncryptionType>2</h:NetAdminPassEncryptionType>\
 <h:NetworkAdminPassword>deadbeef</h:NetworkAdminPassword>\
 </h:Setup_INPUT>";
 
-    let xml = render(|b| envelope::build_invoke(action, &uri, input_xml.as_bytes(), &[], 42, None, b));
+    let xml =
+        render(|b| envelope::build_invoke(action, &uri, input_xml.as_bytes(), &[], 42, None, b));
 
     assert!(xml.contains(&format!("<a:Action>{action}</a:Action>")));
     assert!(xml.contains(&format!("<w:ResourceURI>{uri}</w:ResourceURI>")));
@@ -66,7 +74,9 @@ fn enumerate_and_pull_bodies() {
     let uri = Namespace::Amt.resource_uri("AMT_GeneralSettings");
 
     let e = render(|b| envelope::build_enumerate(&uri, 1, None, b));
-    assert!(e.contains("<Enumerate xmlns=\"http://schemas.xmlsoap.org/ws/2004/09/enumeration\" />"));
+    assert!(
+        e.contains("<Enumerate xmlns=\"http://schemas.xmlsoap.org/ws/2004/09/enumeration\" />")
+    );
 
     let p = render(|b| envelope::build_pull(&uri, "ctx-123", 2, None, b));
     assert!(p.contains("<EnumerationContext>ctx-123</EnumerationContext>"));

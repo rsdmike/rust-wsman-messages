@@ -1,7 +1,7 @@
 use wsman_amt::hostbasedsetup::{HostBasedSetupService, SetupInput, SetupOutput};
+use wsman_core::WsmanError;
 use wsman_core::client::{Client, Credentials};
 use wsman_core::transport::{ResponseBuf, ResponseMeta, Transport};
-use wsman_core::WsmanError;
 
 const SETUP_OK: &[u8] = br#"<?xml version="1.0" encoding="UTF-8"?>
 <a:Envelope xmlns:a="http://www.w3.org/2003/05/soap-envelope"

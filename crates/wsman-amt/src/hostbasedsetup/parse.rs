@@ -1,5 +1,5 @@
-use wsman_core::parse::{extract_text, extract_u32, has_fault};
 use wsman_core::WsmanError;
+use wsman_core::parse::{extract_text, extract_u32, has_fault};
 
 use super::types::SetupOutput;
 

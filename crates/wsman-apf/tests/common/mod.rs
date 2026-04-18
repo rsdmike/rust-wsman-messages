@@ -19,9 +19,15 @@ pub struct FakeHeci {
 
 impl FakeHeci {
     pub fn new(script: Vec<Event>) -> Self {
-        Self { script, idx: 0, closed: false }
+        Self {
+            script,
+            idx: 0,
+            closed: false,
+        }
     }
-    pub fn exhausted(&self) -> bool { self.idx == self.script.len() }
+    pub fn exhausted(&self) -> bool {
+        self.idx == self.script.len()
+    }
 }
 
 impl HeciTransport for FakeHeci {
@@ -33,7 +39,11 @@ impl HeciTransport for FakeHeci {
             .unwrap_or_else(|| panic!("send past end of script"));
         self.idx += 1;
         match ev {
-            Event::ExpectSend { me: em, host: eh, data: ed } => {
+            Event::ExpectSend {
+                me: em,
+                host: eh,
+                data: ed,
+            } => {
                 assert_eq!((me, host), (em, eh), "send addr mismatch");
                 assert_eq!(data, ed.as_slice(), "send bytes mismatch");
                 Ok(())

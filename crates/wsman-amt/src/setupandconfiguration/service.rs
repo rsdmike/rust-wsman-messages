@@ -1,10 +1,10 @@
 use alloc::format;
 
+use wsman_core::WsmanError;
 use wsman_core::client::Client;
 use wsman_core::envelope::build_invoke;
 use wsman_core::schema::Namespace;
 use wsman_core::transport::{ResponseBuf, Transport};
-use wsman_core::WsmanError;
 
 use super::parse::parse_unprovision;
 use super::types::{UnprovisionInput, UnprovisionOutput};

@@ -22,7 +22,8 @@ fn bytes_channel_data(recip: u32, data: &[u8]) -> Vec<u8> {
 
 #[test]
 fn apf_transport_drives_client_one_roundtrip() {
-    let http_response = b"HTTP/1.1 200 OK\r\nContent-Type: application/soap+xml\r\nContent-Length: 5\r\n\r\n<ok/>";
+    let http_response =
+        b"HTTP/1.1 200 OK\r\nContent-Type: application/soap+xml\r\nContent-Length: 5\r\n\r\n<ok/>";
     let close = {
         let mut v = vec![0u8; 5];
         v[0] = wsman_apf::message::APF_CHANNEL_CLOSE;
@@ -52,11 +53,31 @@ fn apf_transport_drives_client_one_roundtrip() {
     };
 
     let script = vec![
-        Event::ExpectSend { me: ME, host: HOST, data: bytes_channel_data(50, &expected_http) },
-        Event::ReturnRecv { me: ME, host: HOST, data: bytes_channel_data(1, http_response) },
-        Event::ExpectSend { me: ME, host: HOST, data: wa },
-        Event::ReturnRecv { me: ME, host: HOST, data: close },
-        Event::ExpectSend { me: ME, host: HOST, data: close_ack },
+        Event::ExpectSend {
+            me: ME,
+            host: HOST,
+            data: bytes_channel_data(50, &expected_http),
+        },
+        Event::ReturnRecv {
+            me: ME,
+            host: HOST,
+            data: bytes_channel_data(1, http_response),
+        },
+        Event::ExpectSend {
+            me: ME,
+            host: HOST,
+            data: wa,
+        },
+        Event::ReturnRecv {
+            me: ME,
+            host: HOST,
+            data: close,
+        },
+        Event::ExpectSend {
+            me: ME,
+            host: HOST,
+            data: close_ack,
+        },
     ];
 
     let fake = FakeHeci::new(script);

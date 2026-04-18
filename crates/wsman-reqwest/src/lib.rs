@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
-use reqwest::blocking::Client as HttpClient;
 use reqwest::StatusCode;
+use reqwest::blocking::Client as HttpClient;
 use wsman_core::error::WsmanError;
 use wsman_core::transport::{ResponseBuf, ResponseMeta, Transport};
 

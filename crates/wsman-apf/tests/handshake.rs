@@ -3,7 +3,7 @@ mod common;
 use common::{Event, FakeHeci};
 use wsman_apf::message::{
     APF_AMT_HTTP_PORT, APF_GLOBAL_REQUEST, APF_PROTOCOLVERSION, APF_REQUEST_SUCCESS,
-    APF_SERVICE_ACCEPT, APF_SERVICE_PFWD, APF_SERVICE_REQUEST, read_be32, write_be32,
+    APF_SERVICE_ACCEPT, APF_SERVICE_PFWD, APF_SERVICE_REQUEST, write_be32,
 };
 use wsman_apf::session::ApfSession;
 use wsman_apf::transport::NoHooks;
@@ -65,12 +65,36 @@ fn bytes_request_success(port: u32) -> Vec<u8> {
 #[test]
 fn happy_path_handshake() {
     let script = vec![
-        Event::ExpectSend { me: ME, host: HOST, data: bytes_proto_version(1, 0) },
-        Event::ReturnRecv { me: ME, host: HOST, data: bytes_proto_version(4, 0) },
-        Event::ReturnRecv { me: ME, host: HOST, data: bytes_service_request(APF_SERVICE_PFWD) },
-        Event::ExpectSend { me: ME, host: HOST, data: bytes_service_accept(APF_SERVICE_PFWD) },
-        Event::ReturnRecv { me: ME, host: HOST, data: bytes_global_request_tcpip_forward(APF_AMT_HTTP_PORT, 1) },
-        Event::ExpectSend { me: ME, host: HOST, data: bytes_request_success(APF_AMT_HTTP_PORT) },
+        Event::ExpectSend {
+            me: ME,
+            host: HOST,
+            data: bytes_proto_version(1, 0),
+        },
+        Event::ReturnRecv {
+            me: ME,
+            host: HOST,
+            data: bytes_proto_version(4, 0),
+        },
+        Event::ReturnRecv {
+            me: ME,
+            host: HOST,
+            data: bytes_service_request(APF_SERVICE_PFWD),
+        },
+        Event::ExpectSend {
+            me: ME,
+            host: HOST,
+            data: bytes_service_accept(APF_SERVICE_PFWD),
+        },
+        Event::ReturnRecv {
+            me: ME,
+            host: HOST,
+            data: bytes_global_request_tcpip_forward(APF_AMT_HTTP_PORT, 1),
+        },
+        Event::ExpectSend {
+            me: ME,
+            host: HOST,
+            data: bytes_request_success(APF_AMT_HTTP_PORT),
+        },
     ];
     let fake = FakeHeci::new(script);
     let mut session = ApfSession::new(fake, NoHooks, ME, HOST);
@@ -82,7 +106,11 @@ fn happy_path_handshake() {
 #[test]
 fn missing_protocol_version_errors() {
     let script = vec![
-        Event::ExpectSend { me: ME, host: HOST, data: bytes_proto_version(1, 0) },
+        Event::ExpectSend {
+            me: ME,
+            host: HOST,
+            data: bytes_proto_version(1, 0),
+        },
         Event::ReturnRecvErr(wsman_apf::error::HeciError::Io("timeout".into())),
         Event::ReturnRecvErr(wsman_apf::error::HeciError::Io("timeout".into())),
     ];

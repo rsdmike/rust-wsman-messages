@@ -1,8 +1,8 @@
+use wsman_core::WsmanError;
 use wsman_core::client::Client;
 use wsman_core::envelope::build_get;
 use wsman_core::schema::Namespace;
 use wsman_core::transport::{ResponseBuf, Transport};
-use wsman_core::WsmanError;
 
 use super::parse;
 use super::types::GeneralSettings;
