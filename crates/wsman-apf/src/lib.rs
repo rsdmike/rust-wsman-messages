@@ -5,5 +5,7 @@ extern crate alloc;
 
 pub mod error;
 pub mod message;
+pub mod transport;
 
 pub use error::{ApfError, HeciError};
+pub use transport::{HeciHooks, HeciTransport, NoHooks};
