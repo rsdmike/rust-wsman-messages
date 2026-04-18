@@ -14,6 +14,9 @@ impl<'a> Selector<'a> {
     /// Renders the `<w:SelectorSet>...</w:SelectorSet>` fragment for the
     /// given selectors. Returns an empty string when `sel` is empty so the
     /// envelope builder can unconditionally splice it in.
+    ///
+    /// Does not XML-escape `name` or `value`; callers pass trusted WSMAN
+    /// field names and InstanceID-shaped values only.
     pub fn render_set(sel: &[Selector<'_>]) -> String {
         if sel.is_empty() {
             return String::new();
