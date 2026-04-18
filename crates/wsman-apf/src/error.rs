@@ -1,6 +1,6 @@
 use alloc::string::String;
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, Clone, thiserror::Error)]
 pub enum HeciError {
     #[error("heci: {0}")]
     Io(String),
