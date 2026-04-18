@@ -39,6 +39,15 @@ impl<T: HeciTransport, H: HeciHooks> ApfSession<T, H> {
 
     pub fn port_forwarding_established(&self) -> bool { self.port_forward_ok }
     pub fn channel_active(&self) -> bool { self.channel_active }
+    pub fn recipient_channel(&self) -> u32 { self.recipient_channel }
+    pub fn tx_window(&self) -> u32 { self.tx_window }
+    pub fn hooks_ref(&self) -> &H { &self.hooks }
+
+    /// Test-only: bypass the handshake when unit-testing downstream operations.
+    #[doc(hidden)]
+    pub fn force_port_forward_ok(&mut self) {
+        self.port_forward_ok = true;
+    }
 
     /// APF init: send protocol version, consume incoming messages until
     /// the ME has forwarded port 16992 (or we time out).
@@ -93,6 +102,75 @@ impl<T: HeciTransport, H: HeciHooks> ApfSession<T, H> {
         self.heci.send(self.me_addr, self.host_addr, data).map_err(ApfError::from)
     }
 
+    /// Open a `forwarded-tcpip` channel to AMT's HTTP port.
+    pub fn channel_open(&mut self) -> Result<(), ApfError> {
+        self.sender_channel = self.sender_channel.wrapping_add(1) % 32;
+        if self.sender_channel == 0 {
+            self.sender_channel = 1;
+        }
+        self.recipient_channel = 0;
+        self.tx_window = 0;
+
+        let mut msg = [0u8; 72];
+        let n = encode_channel_open(
+            &mut msg,
+            self.sender_channel,
+            LME_RX_WINDOW_SIZE,
+            APF_AMT_HTTP_PORT,
+        )?;
+        self.raw_send(&msg[..n])?;
+        self.hooks.post_channel_open_send();
+
+        for _ in 0..30 {
+            let mut buf = [0u8; APF_MAX_INCOMING];
+            let (len, me, host) = match self.heci.recv(&mut buf) {
+                Ok(v) => v,
+                Err(e) => return Err(ApfError::from(e)),
+            };
+            if me != self.me_addr || host != self.host_addr {
+                continue;
+            }
+            let mt = data_first_byte(&buf[..len])?;
+            match mt {
+                APF_CHANNEL_OPEN_CONFIRMATION => {
+                    if len < 13 {
+                        return Err(ApfError::Protocol("CONFIRMATION too short"));
+                    }
+                    self.recipient_channel = read_be32(&buf[5..9]);
+                    self.tx_window = read_be32(&buf[9..13]);
+                    self.channel_active = true;
+                    return Ok(());
+                }
+                APF_CHANNEL_OPEN_FAILURE => {
+                    let reason = if len >= 9 { read_be32(&buf[5..9]) } else { 0 };
+                    return Err(ApfError::OpenRejected(reason));
+                }
+                _ => {
+                    self.process_apf(&buf[..len])?;
+                    continue;
+                }
+            }
+        }
+        Err(ApfError::Timeout("CHANNEL_OPEN_CONFIRMATION"))
+    }
+
+    pub fn close_channel(&mut self) {
+        if self.channel_active {
+            let mut msg = [0u8; 5];
+            if encode_channel_close(&mut msg, self.recipient_channel).is_ok() {
+                let _ = self.raw_send(&msg);
+            }
+            self.channel_active = false;
+            self.recipient_channel = 0;
+            self.tx_window = 0;
+        }
+    }
+
+    pub fn close(&mut self) {
+        self.close_channel();
+        self.heci.close();
+    }
+
     pub(crate) fn process_apf(&mut self, data: &[u8]) -> Result<u8, ApfError> {
         if data.is_empty() {
             return Err(ApfError::Protocol("empty APF message"));
@@ -145,4 +223,8 @@ impl<T: HeciTransport, H: HeciHooks> ApfSession<T, H> {
         }
         Ok(mt)
     }
+}
+
+fn data_first_byte(data: &[u8]) -> Result<u8, ApfError> {
+    data.first().copied().ok_or(ApfError::Protocol("empty message"))
 }
