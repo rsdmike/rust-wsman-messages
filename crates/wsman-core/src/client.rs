@@ -44,6 +44,12 @@ impl<T: Transport> Client<T> {
         id
     }
 
+    /// Consume the client and return the inner transport. Useful for
+    /// tests that want to inspect a spy after the call.
+    pub fn into_transport(self) -> T {
+        self.transport
+    }
+
     /// Send `xml`, handle one 401→digest retry, return body length.
     pub fn execute(
         &mut self,
