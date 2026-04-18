@@ -1,5 +1,5 @@
 [package]
-name = "wsman-core"
+name = "wsman-reqwest"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -7,9 +7,5 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-md-5.workspace = true
-quick-xml.workspace = true
-thiserror.workspace = true
-
-[dev-dependencies]
-pretty_assertions.workspace = true
+wsman-core = { path = "../wsman-core" }
+reqwest.workspace = true

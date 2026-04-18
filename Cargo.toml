@@ -1,25 +1,25 @@
 [workspace]
-members = ["crates/wsman-core", "crates/wsman-amt"]
+members = [
+    "crates/wsman-apf",
+    "crates/wsman-core",
+    "crates/wsman-amt",
+    "crates/wsman-reqwest",
+]
 resolver = "2"
 
 [workspace.package]
 version = "0.1.0"
-edition = "2021"
-rust-version = "1.88"
+edition = "2024"
+rust-version = "1.85"
 license = "Apache-2.0"
 repository = "https://github.com/<org>/go-wsman-messages-rs"
 
 [workspace.dependencies]
-tokio = { version = "1.38", features = ["rt-multi-thread", "macros"] }
-reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "http2"] }
-quick-xml = { version = "0.31", features = ["serialize"] }
-serde = { version = "1", features = ["derive"] }
-serde_repr = "0.1"
-thiserror = "1"
-tracing = "0.1"
-url = "2"
-bytes = "1"
-digest_auth = "0.3"
-wiremock = "0.6"
+# no_std + alloc
+md-5 = { version = "0.10", default-features = false }
+quick-xml = { version = "0.36", default-features = false }
+thiserror = { version = "2", default-features = false }
+# std-only (wsman-reqwest)
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
+# test deps
 pretty_assertions = "1"
-tokio-test = "0.4"

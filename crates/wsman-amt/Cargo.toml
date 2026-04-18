@@ -4,19 +4,10 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
+repository.workspace = true
 
 [dependencies]
 wsman-core = { path = "../wsman-core" }
-serde = { workspace = true }
-serde_repr = { workspace = true }
-quick-xml = { workspace = true }
-tokio = { workspace = true }
 
 [dev-dependencies]
-wiremock = { workspace = true }
-pretty_assertions = { workspace = true }
-tokio-test = { workspace = true }
-
-[[example]]
-name = "get_general_settings"
-path = "examples/get_general_settings.rs"
+pretty_assertions.workspace = true
