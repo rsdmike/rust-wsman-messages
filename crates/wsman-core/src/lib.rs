@@ -3,6 +3,7 @@
 
 extern crate alloc;
 
+pub mod digest;
 pub mod envelope;
 pub mod error;
 pub mod parse;
