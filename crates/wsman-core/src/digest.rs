@@ -62,9 +62,7 @@ fn extract_field(s: &str, name: &str) -> Option<String> {
     let start = s.find(&needle)?;
     let begin = start + needle.len();
     let tail = &s[begin..];
-    let end = tail
-        .find([',', ' ', '\r', '\n'])
-        .unwrap_or(tail.len());
+    let end = tail.find([',', ' ', '\r', '\n']).unwrap_or(tail.len());
     Some(tail[..end].to_string())
 }
 
