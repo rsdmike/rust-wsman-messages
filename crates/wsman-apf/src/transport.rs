@@ -12,6 +12,15 @@ pub trait HeciTransport {
     fn recv(&mut self, buf: &mut [u8]) -> Result<(usize, u8, u8), HeciError>;
 
     fn close(&mut self);
+
+    /// Tear down and re-establish the HECI client connection. Called from
+    /// `HeciHooks::reconnect_heci` when ME has dropped the session and the
+    /// transport needs to fully re-handshake before retrying. Default:
+    /// no-op (Windows/Linux drivers handle reconnect transparently; only
+    /// UEFI MMIO targets need to override).
+    fn reset(&mut self) -> Result<(), HeciError> {
+        Ok(())
+    }
 }
 
 /// Target-specific escape hatches. Every method has a default no-op;
