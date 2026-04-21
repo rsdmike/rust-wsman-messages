@@ -164,19 +164,34 @@ fn unescape(text: &[u8]) -> String {
 }
 
 fn utf8_char_len(first_byte: u8) -> usize {
-    if first_byte < 0x80 { 1 }
-    else if first_byte < 0xC0 { 1 } // continuation byte, shouldn't be first
-    else if first_byte < 0xE0 { 2 }
-    else if first_byte < 0xF0 { 3 }
-    else { 4 }
+    // < 0x80: ASCII. 0x80..0xC0: stray continuation byte (invalid as first); advance by 1.
+    if first_byte < 0xC0 {
+        1
+    } else if first_byte < 0xE0 {
+        2
+    } else if first_byte < 0xF0 {
+        3
+    } else {
+        4
+    }
 }
 
 /// If `bytes` starts with a known entity, return `(replacement_char, length)`.
 fn match_entity(bytes: &[u8]) -> Option<(char, usize)> {
-    if bytes.starts_with(b"&amp;") { return Some(('&', 5)); }
-    if bytes.starts_with(b"&lt;") { return Some(('<', 4)); }
-    if bytes.starts_with(b"&gt;") { return Some(('>', 4)); }
-    if bytes.starts_with(b"&quot;") { return Some(('"', 6)); }
-    if bytes.starts_with(b"&apos;") { return Some(('\'', 6)); }
+    if bytes.starts_with(b"&amp;") {
+        return Some(('&', 5));
+    }
+    if bytes.starts_with(b"&lt;") {
+        return Some(('<', 4));
+    }
+    if bytes.starts_with(b"&gt;") {
+        return Some(('>', 4));
+    }
+    if bytes.starts_with(b"&quot;") {
+        return Some(('"', 6));
+    }
+    if bytes.starts_with(b"&apos;") {
+        return Some(('\'', 6));
+    }
     None
 }
