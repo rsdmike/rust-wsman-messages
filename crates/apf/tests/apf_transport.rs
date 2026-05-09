@@ -1,10 +1,10 @@
 mod common;
 
 use common::{Event, FakeHeci};
-use wsman_apf::apf_transport::ApfTransport;
-use wsman_apf::message::{APF_CHANNEL_DATA, write_be32};
-use wsman_apf::session::ApfSession;
-use wsman_apf::transport::NoHooks;
+use apf::apf_transport::ApfTransport;
+use apf::message::{APF_CHANNEL_DATA, write_be32};
+use apf::session::ApfSession;
+use apf::transport::NoHooks;
 use wsman_core::client::{Client, Credentials};
 use wsman_core::transport::ResponseBuf;
 
@@ -26,19 +26,19 @@ fn apf_transport_drives_client_one_roundtrip() {
         b"HTTP/1.1 200 OK\r\nContent-Type: application/soap+xml\r\nContent-Length: 5\r\n\r\n<ok/>";
     let close = {
         let mut v = vec![0u8; 5];
-        v[0] = wsman_apf::message::APF_CHANNEL_CLOSE;
+        v[0] = apf::message::APF_CHANNEL_CLOSE;
         write_be32(&mut v[1..5], 1);
         v
     };
     let close_ack = {
         let mut v = vec![0u8; 5];
-        v[0] = wsman_apf::message::APF_CHANNEL_CLOSE;
+        v[0] = apf::message::APF_CHANNEL_CLOSE;
         write_be32(&mut v[1..5], 50);
         v
     };
     let wa = {
         let mut v = vec![0u8; 9];
-        v[0] = wsman_apf::message::APF_CHANNEL_WINDOW_ADJUST;
+        v[0] = apf::message::APF_CHANNEL_WINDOW_ADJUST;
         write_be32(&mut v[1..5], 50);
         write_be32(&mut v[5..9], http_response.len() as u32);
         v

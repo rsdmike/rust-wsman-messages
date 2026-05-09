@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "crates/wsman-apf",
+    "crates/apf",
     "crates/wsman-core",
     "crates/wsman-amt",
     "crates/wsman-reqwest",

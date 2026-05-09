@@ -1,12 +1,12 @@
 mod common;
 
 use common::{Event, FakeHeci};
-use wsman_apf::message::{
+use apf::message::{
     APF_AMT_HTTP_PORT, APF_GLOBAL_REQUEST, APF_PROTOCOLVERSION, APF_REQUEST_SUCCESS,
     APF_SERVICE_ACCEPT, APF_SERVICE_PFWD, APF_SERVICE_REQUEST, write_be32,
 };
-use wsman_apf::session::ApfSession;
-use wsman_apf::transport::NoHooks;
+use apf::session::ApfSession;
+use apf::transport::NoHooks;
 
 const HOST: u8 = 0x07;
 const ME: u8 = 0x11;
@@ -111,8 +111,8 @@ fn missing_protocol_version_errors() {
             host: HOST,
             data: bytes_proto_version(1, 0),
         },
-        Event::ReturnRecvErr(wsman_apf::error::HeciError::Io("timeout".into())),
-        Event::ReturnRecvErr(wsman_apf::error::HeciError::Io("timeout".into())),
+        Event::ReturnRecvErr(apf::error::HeciError::Io("timeout".into())),
+        Event::ReturnRecvErr(apf::error::HeciError::Io("timeout".into())),
     ];
     let fake = FakeHeci::new(script);
     let mut session = ApfSession::new(fake, NoHooks, ME, HOST);
