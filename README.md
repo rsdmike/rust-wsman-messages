@@ -1,4 +1,4 @@
-# go-wsman-messages-rs
+# rust-wsman-messages
 
 Rust crate bindings for Intel AMT WS-Management, mirroring the Go library
 at https://github.com/device-management-toolkit/go-wsman-messages.

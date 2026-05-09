@@ -1,12 +1,12 @@
 mod common;
 
 use common::{Event, FakeHeci};
-use wsman_apf::message::{
+use apf::message::{
     APF_AMT_HTTP_PORT, APF_CHANNEL_OPEN, APF_CHANNEL_OPEN_CONFIRMATION, APF_CHANNEL_OPEN_FAILURE,
     LME_RX_WINDOW_SIZE, write_be32,
 };
-use wsman_apf::session::ApfSession;
-use wsman_apf::transport::{HeciHooks, NoHooks};
+use apf::session::ApfSession;
+use apf::transport::{HeciHooks, NoHooks};
 
 const HOST: u8 = 0x07;
 const ME: u8 = 0x11;
@@ -99,7 +99,7 @@ fn channel_open_failure_returns_error() {
     let mut session = ApfSession::new(fake, NoHooks, ME, HOST);
     session.force_port_forward_ok();
     let err = session.channel_open().unwrap_err();
-    assert!(matches!(err, wsman_apf::error::ApfError::OpenRejected(4)));
+    assert!(matches!(err, apf::error::ApfError::OpenRejected(4)));
 }
 
 #[test]

@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
-use wsman_apf::error::HeciError;
-use wsman_apf::transport::HeciTransport;
+use apf::error::HeciError;
+use apf::transport::HeciTransport;
 
 #[derive(Debug, Clone)]
 pub enum Event {

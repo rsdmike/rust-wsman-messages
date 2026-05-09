@@ -1,17 +1,17 @@
 //! End-to-end test: drives AMT_GeneralSettings::Get all the way from
-//! wsman-amt through wsman-core and wsman-apf, using a scripted FakeHeci
+//! wsman-amt through wsman-core and apf, using a scripted FakeHeci
 //! that impersonates the ME firmware. Proves the crate integration.
 
 use wsman_amt::general::Settings;
-use wsman_apf::apf_transport::ApfTransport;
-use wsman_apf::error::HeciError;
-use wsman_apf::message::{
+use apf::apf_transport::ApfTransport;
+use apf::error::HeciError;
+use apf::message::{
     APF_CHANNEL_CLOSE, APF_CHANNEL_DATA, APF_CHANNEL_OPEN, APF_CHANNEL_OPEN_CONFIRMATION,
     APF_CHANNEL_WINDOW_ADJUST, APF_GLOBAL_REQUEST, APF_PROTOCOLVERSION, APF_REQUEST_SUCCESS,
     APF_SERVICE_ACCEPT, APF_SERVICE_PFWD, APF_SERVICE_REQUEST, LME_RX_WINDOW_SIZE, write_be32,
 };
-use wsman_apf::session::ApfSession;
-use wsman_apf::transport::{HeciTransport, NoHooks};
+use apf::session::ApfSession;
+use apf::transport::{HeciTransport, NoHooks};
 use wsman_core::client::{Client, Credentials};
 
 const HOST: u8 = 0x07;

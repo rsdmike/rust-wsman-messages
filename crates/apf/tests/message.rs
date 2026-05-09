@@ -1,4 +1,4 @@
-use wsman_apf::message::*;
+use apf::message::*;
 
 #[test]
 fn opcode_constants() {

@@ -10,5 +10,5 @@ repository.workspace = true
 wsman-core = { path = "../wsman-core" }
 
 [dev-dependencies]
-wsman-apf = { path = "../wsman-apf" }
+apf = { path = "../apf" }
 pretty_assertions.workspace = true

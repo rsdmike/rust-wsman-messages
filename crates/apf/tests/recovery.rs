@@ -1,10 +1,10 @@
 mod common;
 
 use common::{Event, FakeHeci};
-use wsman_apf::error::HeciError;
-use wsman_apf::message::{APF_CHANNEL_OPEN, LME_RX_WINDOW_SIZE, write_be32};
-use wsman_apf::session::ApfSession;
-use wsman_apf::transport::{HeciHooks, HeciTransport};
+use apf::error::HeciError;
+use apf::message::{APF_CHANNEL_OPEN, LME_RX_WINDOW_SIZE, write_be32};
+use apf::session::ApfSession;
+use apf::transport::{HeciHooks, HeciTransport};
 
 const HOST: u8 = 0x07;
 const ME: u8 = 0x11;
@@ -50,7 +50,7 @@ fn bytes_open(sender: u32) -> Vec<u8> {
 
 fn bytes_confirmation(recip: u32, sender: u32, window: u32) -> Vec<u8> {
     let mut v = vec![0u8; 17];
-    v[0] = wsman_apf::message::APF_CHANNEL_OPEN_CONFIRMATION;
+    v[0] = apf::message::APF_CHANNEL_OPEN_CONFIRMATION;
     write_be32(&mut v[1..5], recip);
     write_be32(&mut v[5..9], sender);
     write_be32(&mut v[9..13], window);

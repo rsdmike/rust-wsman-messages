@@ -1,9 +1,9 @@
 mod common;
 
 use common::{Event, FakeHeci};
-use wsman_apf::message::{APF_CHANNEL_DATA, APF_CHANNEL_WINDOW_ADJUST, write_be32};
-use wsman_apf::session::ApfSession;
-use wsman_apf::transport::NoHooks;
+use apf::message::{APF_CHANNEL_DATA, APF_CHANNEL_WINDOW_ADJUST, write_be32};
+use apf::session::ApfSession;
+use apf::transport::NoHooks;
 
 const HOST: u8 = 0x07;
 const ME: u8 = 0x11;
@@ -26,7 +26,7 @@ fn bytes_window_adjust(recip: u32, add: u32) -> Vec<u8> {
 }
 
 fn open_session(script_tail: Vec<Event>) -> ApfSession<FakeHeci, NoHooks> {
-    use wsman_apf::message::{
+    use apf::message::{
         APF_AMT_HTTP_PORT, APF_CHANNEL_OPEN, APF_CHANNEL_OPEN_CONFIRMATION, LME_RX_WINDOW_SIZE,
     };
     let mut open = vec![0u8; 66];
@@ -113,7 +113,7 @@ fn recv_bytes_accumulates_channel_data_and_replies_with_window_adjust() {
             host: HOST,
             data: {
                 let mut v = vec![0u8; 5];
-                v[0] = wsman_apf::message::APF_CHANNEL_CLOSE;
+                v[0] = apf::message::APF_CHANNEL_CLOSE;
                 write_be32(&mut v[1..5], 1);
                 v
             },
@@ -123,7 +123,7 @@ fn recv_bytes_accumulates_channel_data_and_replies_with_window_adjust() {
             host: HOST,
             data: {
                 let mut v = vec![0u8; 5];
-                v[0] = wsman_apf::message::APF_CHANNEL_CLOSE;
+                v[0] = apf::message::APF_CHANNEL_CLOSE;
                 write_be32(&mut v[1..5], 50);
                 v
             },
